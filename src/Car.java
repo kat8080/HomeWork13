@@ -1,18 +1,22 @@
 public class Car {
     String brand;
     String model;
-    String engineVolume;
+    Float engineVolume;
     String color;
     int year;
     String country;
 
-    Car(String brand, String model, int year, String country, String color, String engineVolume) {
-        this.brand = brand;
-        this.model = model;
-        this.year = year;
-        this.country = country;
-        this.color = color;
-        this.engineVolume = engineVolume;
+    Car(String brand) {
+        this.brand = "модель";
+    }
+
+    Car(String brand, String model, int year, String country, String color, Float engineVolume) {
+        this.brand = Tasks.validOrDefault(brand, "default");
+        this.model = Tasks.validOrDefault(model, "default");
+        this.year = year >= 0 ? year : 2000;
+        this.country = Tasks.validOrDefault(country, "default");
+        this.color = Tasks.validOrDefault(color, "default");
+        this.engineVolume = engineVolume >= 0.0f ? engineVolume : 1.5f;
     }
 
     public String toString() {
