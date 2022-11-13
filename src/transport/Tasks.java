@@ -1,3 +1,5 @@
+package transport;
+
 public class Tasks {
     public static String validOrDefault(String value, String defoltValue) {
         if (value == null || value.isBlank()) {
@@ -7,7 +9,7 @@ public class Tasks {
 
     public static int check(int meaning, int defoltMeaning) {   //проверка (зачение, заначение по умолчанию)
         if (meaning <= 0) {              //если значение <= 0
-            return defoltMeaning;                  //то ставится заначение значение по умолчанию
+            return defoltMeaning;                  //то ставится значение по умолчанию
         } else return meaning;         //иначе заданное значение
     }
 
