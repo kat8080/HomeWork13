@@ -1,7 +1,6 @@
 package transport;
 
 import java.time.LocalDate;
-import java.util.Locale;
 
 public class Car {
     public static class Key {          //вложенный класс Ключ
@@ -20,6 +19,13 @@ public class Car {
         public boolean isKeyLessAccess() {
             return keyLessAccess;
         }
+
+        @Override
+        public String toString() {
+            return "Запуск двигателя:  " +
+                    "remoteEngineStart=" + remoteEngineStart +
+                    ", keyLessAccess=" + keyLessAccess ;
+        }
     }
 
     public static class Insurance {         //вложенный класс Страховка
@@ -37,8 +43,18 @@ public class Car {
             return namber.length() == 9;         //проверка длины номера страховки
         }
 
-        public boolean isInsuranceValid() {                  //проверка действительности страховки
-            return LocalDate.now().isBefore(this.validUntil);   //сегодняшняя дата раньше даты страховки
+        public static void isInsuranceValid(LocalDate validUntil) {                  //проверка действительности страховки
+            if (!LocalDate.now().isBefore(validUntil)) {
+                System.out.println("Страховка действительна");
+            }else System.out.println("Срок действия страховки истек");
+        }
+
+        @Override
+        public String toString() {
+            return "Страховка: " +
+                    " срок действия " + validUntil +
+                    ", стоимость " + cost +
+                    ", номер " + namber ;
         }
     }
 
@@ -53,13 +69,13 @@ public class Car {
     private final String bodyType;              //Тип кузова          не изменяется
     private String registrationNumber;        //Регистрационный номер
     private final String numberSeats;          //Количество мест       не изменяется
-    private boolean winterTires;          //зимаШины
+    private String tires;          //зимаШины
     private Key key;
     private Insurance insurance;
 
     public Car(String brand, String model, int year, String country, String color, Float engineVolume,
                String transmission, String bodyType, String registrationNumber, String numberSeats,
-               boolean winterTires) {
+               String tires, Key key, Insurance insurance) {
 
         this.brand=Tasks.validOrDefault(brand, "default");
         this.model = Tasks.validOrDefault(model, "default");
@@ -71,7 +87,9 @@ public class Car {
         this.numberSeats = Tasks.validOrDefault(numberSeats, "default");
         setTransmission(transmission);
         setRegistrationNumber(registrationNumber);
-        setWinterTires(winterTires);
+        setTires(tires);
+        this.key = key;
+        this.insurance = insurance;
     }
 
     public String getBrand() {
@@ -122,6 +140,21 @@ public class Car {
         this.transmission = Tasks.validOrDefault(transmission, "default");
     }
 
+    public String getTires() {
+        return tires;
+    }
+
+    public void setTires(String tires) {
+        this.tires = Tasks.validOrDefault(tires, "default");
+    }
+
+    public void setSeasonTires() {                                         //замена шин в зависимости от месяца
+        int currentMonth = LocalDate.now().getMonthValue();              //текущий месяц
+        if (currentMonth <= 4 || currentMonth >= 11) {
+            System.out.println("Зимняя резина");
+        } else System.out.println("Летняя резина");
+    }
+
     public String getRegistrationNumber() {
         return registrationNumber;
     }
@@ -130,48 +163,49 @@ public class Car {
         this.registrationNumber = registrationNumber;
     }
 
-    public boolean isWinterTires() {
-        return winterTires;
+    public static boolean isRegNumberValid(String registrationNumber) {                        //проверка регНомера
+        if (registrationNumber.length() != 9) {                   //длина номера не больше 9
+            System.out.println("Регистрационный номер не верный");
+        } else System.out.println("Регистрационный номер верный");
+
+        char[] registrationNumberChars = registrationNumber.toCharArray();   //проверка каждого символа
+        return isRegNumberLetter(registrationNumberChars[0])                      //соответствие цифре или букве
+                && isNamber(registrationNumberChars[1])
+                && isNamber(registrationNumberChars[2])
+                && isNamber(registrationNumberChars[3])
+                && isRegNumberLetter(registrationNumberChars[4])
+                && isRegNumberLetter(registrationNumberChars[5])
+                && isNamber(registrationNumberChars[6])
+                && isNamber(registrationNumberChars[7])
+                && isNamber(registrationNumberChars[8]);
     }
 
-    public void setWinterTires(boolean winterTires) {
-        this.winterTires = winterTires;
-    }
-
-    public void setSeasonTires() {                                         //замена шин в зависимости от месяца
-        int currentMonth = LocalDate.now().getMonthValue();              //текущий месяц
-        this.winterTires = currentMonth <= 4 || currentMonth >= 11;        //зимняя резина с ноября по апрель
-    }
-
-    public boolean isRegNumberValid() {                        //проверка регНомера
-        if (this.registrationNumber.length() != 9) {                   //длина номера не больше 9
-            return false;
-        }
-        char[] regNumberChars = this.registrationNumber.toCharArray();   //проверка каждого символа
-        return isRegNumberLetter(regNumberChars[0])                      //соответствие цифре или букве
-                && isNamber(regNumberChars[1])
-                && isNamber(regNumberChars[2])
-                && isNamber(regNumberChars[3])
-                && isRegNumberLetter(regNumberChars[4])
-                && isRegNumberLetter(regNumberChars[5])
-                && isNamber(regNumberChars[6])
-                && isNamber(regNumberChars[7])
-                && isNamber(regNumberChars[8]);
-    }
-
-    private boolean isNamber(char symbol) {          //проверка на цифру
+    private static boolean isNamber(char symbol) {          //проверка на цифру
         return Character.isDigit(symbol);      //можно еще return symbol>='0' $$ symbol<='9'
     }
 
 
-    private boolean isRegNumberLetter(char symbol) {        //проверка на букву
+    private static boolean isRegNumberLetter(char symbol) {        //проверка на букву
         String allowedSymbols = "АВЕКМНОРСТУХ";
-        return allowedSymbols.contains("" + symbol);        //contains проверяет находится ли подстрока в строке
+        return allowedSymbols.contains("" + symbol);  //contains проверяет находится ли подстрока в строке
     }
 
+    public Key getKey() {
+        return key;
+    }
 
+    public Insurance getInsurance() {
+        return insurance;
+    }
 
+    @Override
     public String toString() {
-        return "Автомобиль: " + brand + " " + model + ", " + year + " год выпуска, сборка  в " + country + ", " + color + " цвета, объем двигателя — " + engineVolume + " л.";
+        System.out.println(key);
+        System.out.println(insurance);
+            return "Автомобиль:  " + brand + " " + model + ", " + year + " год выпуска, сборка  в "
+                    + country + ", " + color + " цвета, объем двигателя — " + engineVolume + " л." + ", " +
+                    " Коробка передач " + transmission + ", " + " Тип кузова " + bodyType + ", " + " Регистрационный номер "
+                    + registrationNumber + ", " + " Количество мест " + numberSeats + ", " + " Резина " + tires;
+
 }
 }
